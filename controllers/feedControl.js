@@ -108,9 +108,23 @@ exports.updatePost = (req, res, next) => {
     });
 };
 
-exports.deletePost = (req, res, next) => { };
+exports.deletePost = (req, res, next) => {
+  Post.findById(req.params.id)
+    .then(post => {
+      if (!post) {
+        throw new Error('no matching post').statusCode(404);
+      }
+      deleteFile(post.image);
+      return Post.findByIdAndRemove(req.params.id);
+    })
+    .then(reslt => res.status(200).json({ msg: 'post deleted!' }))
+    .catch(err => {
+      if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
+};
 
 const deleteFile = filepath => {
   filepath = path.join(__dirname, '../', filepath);
-  fs.unlink(filepath, err => console.log(err || deleted));
+  fs.unlink(filepath, err => console.log(err || 'deleted'));
 };
