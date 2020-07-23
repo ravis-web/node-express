@@ -28,6 +28,7 @@ const fileFilter = (req, file, callb) => {
 };
 
 
+const authRoutes = require('./routes/auth');
 const feedRoutes = require('./routes/feed');
 
 
@@ -54,6 +55,7 @@ app.use((req, res, next) => {
 
 
 // routes
+app.use('/auth', authRoutes);
 app.use('/feed', feedRoutes);
 
 
