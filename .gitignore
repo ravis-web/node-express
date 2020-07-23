@@ -4,5 +4,8 @@
 # Node
 node_modules
 
+# Cluster
+utils/cluster.js
+
 # NPM
 package-lock.json

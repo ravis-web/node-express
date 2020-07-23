@@ -112,15 +112,21 @@ class Feed extends Component {
       url = 'URL';
     }
 
+    const formData = new FormData();
+    formData.append('title', postData.title);
+    formData.append('image', postData.image);
+    formData.append('content', postData.content);
+
     fetch(url, {
-      method : method,
-      headers : {
-        'Content-Type' : 'application/json'
-      },
-      body : JSON.stringify({
-        title: postData.title,
-        content: postData.content
-      })
+      method: method,
+      // headers: {
+      //   'Content-Type': 'application/json'
+      // },
+      // body: JSON.stringify({
+      //   title: postData.title,
+      //   content: postData.content
+      // })
+      body: formData // multipart/form-data
     })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
