@@ -15,4 +15,10 @@ router.post('/post', [
   body('content').trim().isLength({ min: 5 })
 ], feedCtrl.createPost);
 
+// PUT routes
+router.put('/post/:id', [
+  body('title').trim().isLength({ min: 5 }),
+  body('content').trim().isLength({ min: 5 })
+], feedCtrl.updatePost);
+
 module.exports = router;
