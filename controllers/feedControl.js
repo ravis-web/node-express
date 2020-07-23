@@ -6,14 +6,21 @@ const { validationResult } = require('express-validator');
 const Post = require('../models/Post');
 
 exports.fetchPosts = (req, res, next) => {
-  Post.find()
+  const curPage = req.query.page || 1;
+  const perPage = 2; // sync w frontend
+  let totalPost = 0;
+  Post.find().countDocuments()
+    .then(count => {
+      totalPost = count;
+      return Post.find().skip((curPage - 1) * perPage).limit(perPage);
+    })
     .then(posts => {
       if (!posts) {
         const error = new Error('no posts found');
         error.statusCode = 404;
         throw error;
       }
-      res.status(200).json({ posts: posts });
+      res.status(200).json({ posts: posts, totalItems: totalPost });
     })
     .catch(err => {
       if (!err.statusCode) err.statusCode = 500;
@@ -82,6 +89,7 @@ exports.updatePost = (req, res, next) => {
   let image = req.body.image;
   if (req.file) {
     image = req.file.path.replace('\\', '/');
+    // image = req.file.path.; // Linux and OSX
   }
   if (!image) {
     const error = new Error('no image found');
