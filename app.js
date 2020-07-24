@@ -62,7 +62,7 @@ app.use('/feed', feedRoutes);
 // error-handler
 app.use((err, req, res, nxt) => {
   console.log(err);
-  res.status(err.status || 500).json({ msg: err.message });
+  res.status(err.statusCode || 500).json({ msg: err.message });
 });
 
 
