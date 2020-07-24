@@ -10,6 +10,7 @@ const router = express.Router();
 // GET routes
 router.get('/posts', isAuthen, feedCtrl.fetchPosts);
 router.get('/post/:id', isAuthen, feedCtrl.fetchPost);
+router.get('/status', isAuthen, feedCtrl.fetchStatus);
 
 
 // POST routes
@@ -24,6 +25,11 @@ router.put('/post/:id', isAuthen, [
   body('title').trim().isLength({ min: 5 }),
   body('content').trim().isLength({ min: 5 })
 ], feedCtrl.updatePost);
+
+// PATCH routes
+router.patch('/status', isAuthen, [
+  body('status').trim().not().isEmpty(),
+], feedCtrl.updateStatus);
 
 
 // DELETE routes

@@ -121,6 +121,25 @@ exports.deletePost = (req, res, next) => {
     .catch(err => errHandler(err, next));
 };
 
+exports.fetchStatus = (req, res, next) => {
+  User.findById(req.userId).then(user => {
+    if (!user) errOccured('user not found', 404);
+    res.status(200).json({ status: user.status });
+  }).catch(err => errHandler(err, next));
+};
+
+exports.updateStatus = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) errOccured('validation failed!', 422);
+
+  User.findById(req.userId).then(user => {
+    if (!user) errOccured('user not found', 404);
+    user.status = req.body.status;
+    return user.save();
+  }).then(user => res.status(200).json({ msg: 'status-updated', status: user.status }))
+    .catch(err => errHandler(err, next));
+};
+
 const deleteFile = filepath => {
   filepath = path.join(__dirname, '../', filepath);
   fs.unlink(filepath, err => console.log(err || 'deleted'));
