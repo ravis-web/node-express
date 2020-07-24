@@ -22,7 +22,7 @@ exports.regUser = (req, res, next) => {
 
 exports.loginUser = (req, res, next) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty) errOccured('validation failed', 422);
+  if (!errors.isEmpty()) errOccured('validation failed', 422);
   let currUser;
 
   // password-match
