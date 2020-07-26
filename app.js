@@ -70,6 +70,10 @@ app.use((err, req, res, nxt) => {
 mongoose.connect(cluster, configs)
   .then(conn => {
     console.log('cluster-connected');
-    app.listen(5000);
+    const server = app.listen(5000);
+
+    /* Web-Socket : Socket.io */
+    const io = require('./socket/io').init(server); // estab websocket conn
+    io.on('connection', socket => { console.log('socket-client : ' + socket.id) }); // listener // client-conn
   })
   .catch(err => console.log(err));

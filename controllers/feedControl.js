@@ -6,6 +6,8 @@ const { validationResult } = require('express-validator');
 const errOccured = require('../utils/errors').errOccured;
 const errHandler = require('../utils/errors').errHandler;
 
+const socketIO = require('../socket/io');
+
 const Post = require('../models/Post');
 const User = require('../models/User');
 
@@ -14,7 +16,7 @@ exports.fetchPosts = async (req, res, next) => {
   const perPage = 2; // sync w frontend
   try {
     const totalPost = await Post.find().countDocuments();
-    const posts = await Post.find().populate('creator').skip((curPage - 1) * perPage).limit(perPage);
+    const posts = await Post.find().populate('creator').skip((curPage - 1) * perPage).limit(perPage).sort({ createdAt: -1 });
     if (!posts) errOccured('no posts found', 404);
     res.status(200).json({ posts: posts, totalItems: totalPost });
   } catch (err) { errHandler(err, next); }
@@ -47,6 +49,7 @@ exports.createPost = async (req, res, next) => {
     const user = await User.findById(req.userId);
     user.posts.push(post); // mongoose adds ref. by default
     await user.save();
+    socketIO.getIO().emit('posts', { action: 'create', post: { ...post._doc, creator: { _id: req.userId, name: user.name } } });
     res.status(201).json({
       message: 'post created!',
       post: post,
@@ -78,9 +81,9 @@ exports.updatePost = async (req, res, next) => {
   if (!image) errOccured('no image found', 422);
 
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await (await Post.findById(req.params.id)).populate('creator');
     if (!post) errOccured('no matching post', 404);
-    if (post.creator.toString() !== req.userId) errOccured('post created by another user', 403);
+    if (post.creator._id.toString() !== req.userId) errOccured('post created by another user', 403);
     post.title = req.body.title;
     post.content = req.body.content;
     if (image !== post.image) {
@@ -88,6 +91,7 @@ exports.updatePost = async (req, res, next) => {
       post.image = image;
     }
     await post.save();
+    socketIO.getIO().emit('posts', { action: 'update', post: post });
     res.status(200).json({ post: post });
   } catch (err) { errHandler(err, next); }
 };
@@ -102,7 +106,8 @@ exports.deletePost = async (req, res, next) => {
     const user = await User.findById(req.userId);
     user.posts.pull(req.params.id); // mongoose removes ref from user
     await user.save();
-    res.status(200).json({ msg: 'post deleted!' });
+    socketIO.getIO().emit('posts', { action: 'delete', post: req.params.id })
+    res.status(200).json({ msg: 'post deleted!', post: req.params.id });
   } catch (err) { errHandler(err, next); }
 };
 
