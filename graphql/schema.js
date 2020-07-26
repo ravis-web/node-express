@@ -3,13 +3,13 @@
 const { buildSchema } = require('graphql');
 
 module.exports = buildSchema(`
-  type testGraphQL {
-    name : String!
-    view : Int!
+  type authInfo {
+    token : String!
+    userId : String!
   }
 
   type RootQ {
-    hello : testGraphQL
+    loginUser(email: String! password: String!) : authInfo!
   }
 
   type Post {
