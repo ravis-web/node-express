@@ -57,6 +57,10 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // GraphQL
+  if (req.method === 'OPTIONS') return res.sendStatus(200); // acceptance
+
   next();
 });
 
@@ -70,7 +74,14 @@ app.use('/feed', feedRoutes);
 app.use('/graphql', graphql({
   schema: schema,
   rootValue: resolver,
-  graphiql: true
+  graphiql: true,
+  // formatError(err) // deprecated
+  customFormatErrorFn: err => {
+    if (!err.originalError) return err;
+    const data = err.originalError.data;
+    const code = err.originalError.code;
+    return { message: err.message || 'an error occurred!', status: code || 500, data: data };
+  }
 }));
 
 
