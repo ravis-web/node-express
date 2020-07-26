@@ -3,11 +3,17 @@ const path = require('path');
 const express = require('express');
 const bParser = require('body-parser');
 const multer = require('multer');
+const expGrQL = require('express-graphql');
 
 /* Mongoose : Setup */
 const mongoose = require('mongoose');
 const cluster = require('./utils/cluster').cluster;
 const configs = require('./utils/cluster').configs;
+
+/* GraphQL : Setup */
+const graphql = expGrQL.graphqlHTTP;
+const schema = require('./graphql/schema');
+const resolver = require('./graphql/resolver');
 
 
 /* Multer : Configs */
@@ -28,9 +34,10 @@ const fileFilter = (req, file, callb) => {
 };
 
 
+/* Route : Imports
 const authRoutes = require('./routes/auth');
 const feedRoutes = require('./routes/feed');
-
+*/
 
 const app = express();
 
@@ -54,9 +61,17 @@ app.use((req, res, next) => {
 });
 
 
-// routes
+/* routes
 app.use('/auth', authRoutes);
 app.use('/feed', feedRoutes);
+*/
+
+// GraphQL
+app.use('/graphql', graphql({
+  schema: schema,
+  rootValue: resolver,
+  graphiql: true
+}));
 
 
 // error-handler
@@ -72,8 +87,9 @@ mongoose.connect(cluster, configs)
     console.log('cluster-connected');
     const server = app.listen(5000);
 
-    /* Web-Socket : Socket.io */
+    /* Web-Socket : Socket.io
     const io = require('./socket/io').init(server); // estab websocket conn
     io.on('connection', socket => { console.log('socket-client : ' + socket.id) }); // listener // client-conn
+    */
   })
   .catch(err => console.log(err));

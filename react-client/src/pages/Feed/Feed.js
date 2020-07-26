@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 
-import webSocket from 'socket.io-client';
+// import webSocket from 'socket.io-client';
 
 import Post from '../../components/Feed/Post/Post';
 import Button from '../../components/Button/Button';
@@ -40,16 +40,17 @@ class Feed extends Component {
 
     this.loadPosts();
 
-    /* Web-Socket : Socket.io*/
+    /* --- Web-Socket : Socket.io ---
     const socket = webSocket('http://localhost:5000');
     socket.on('posts', data => {
       if (data.action === 'create') this.addPost(data.post);
       else if (data.action === 'update') this.updatePost(data.post);
       else if (data.action === 'delete') this.loadPosts();
-
     });
+    */
   }
 
+  /*
   addPost = post => {
     this.setState(prevState => {
       const updatedPosts = [...prevState.posts];
@@ -78,6 +79,7 @@ class Feed extends Component {
       };
     });
   };
+  */
 
   loadPosts = direction => {
     if (direction) {
