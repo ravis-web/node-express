@@ -84,5 +84,45 @@ module.exports = {
         }
       }), total: totalPost
     };
+  },
+
+  fetchPost: async function ({ id }, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+    const post = await Post.findById(id).populate('creator');
+    if (!post) throw new Error('post doesnt exist');
+    return { ...post._doc, _id: post._id.toString(), createdAt: post.createdAt.toISOString(), updatedAt: post.updatedAt.toISOString() };
+  },
+
+  updatePost: async function ({ id, postInput }, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+
+    const post = await Post.findById(id).populate('creator');
+    if (!post) throw new Error('no matching post');
+    if (post.creator._id.toString() !== req.userId.toString()) throw new Error('post created by another user');
+
+    post.title = postInput.title;
+    post.content = postInput.content;
+    if (post.image !== postInput.image && postInput.image !== 'undefined') post.image = postInput.image;
+    const updPost = await post.save();
+    return { ...updPost._doc, _id: updPost._id.toString(), createdAt: updPost.createdAt.toISOString(), updatedAt: updPost.updatedAt.toISOString() };
+  },
+
+  deletePost: async function ({ id }, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+
+    try {
+      const post = await Post.findById(id);
+      if (!post) throw new Error('no matching post');
+      if (post.creator.toString() !== req.userId.toString()) throw new Error('post created by another user');
+      require('../controllers/feedControl').deleteFile(post.image);
+      await Post.findByIdAndRemove(id);
+      const user = await User.findById(req.userId);
+      user.posts.pull(id); // mongoose removes ref from user
+      await user.save();
+      return true;
+    } catch (err) {
+      console.log(err.message);
+      return false;
+    }
   }
 };

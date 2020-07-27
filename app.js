@@ -17,6 +17,8 @@ const resolver = require('./graphql/resolver');
 
 const isAuthen = require('./middlewares/isAuthen');
 
+const deltFile = require('./controllers/feedControl').deleteFile;
+
 
 /* Multer : Configs */
 const fileStore = multer.diskStorage({
@@ -74,7 +76,15 @@ app.use('/feed', feedRoutes);
 
 app.use(isAuthen);
 
-// GraphQL
+// RESTful : Uploads
+app.put('/upload', (req, res, next) => {
+  if (!req.isAuthen) throw new Error('unauthorized request');
+  if (!req.file) return res.status(200).json({ msg: 'no file selected!' });
+  if (req.body.currImg) deltFile(req.body.currImg);
+  return res.status(201).json({ msg: 'image uploaded', filepath: req.file.path.replace('\\', '/') });
+});
+
+// GraphQL : Database
 app.use('/graphql', graphql({
   schema: schema,
   rootValue: resolver,

@@ -81,7 +81,7 @@ exports.updatePost = async (req, res, next) => {
   if (!image) errOccured('no image found', 422);
 
   try {
-    const post = await (await Post.findById(req.params.id)).populate('creator');
+    const post = await Post.findById(req.params.id).populate('creator');
     if (!post) errOccured('no matching post', 404);
     if (post.creator._id.toString() !== req.userId) errOccured('post created by another user', 403);
     post.title = req.body.title;
@@ -135,3 +135,5 @@ const deleteFile = filepath => {
   filepath = path.join(__dirname, '../', filepath);
   fs.unlink(filepath, err => console.log(err || 'deleted'));
 };
+
+exports.deleteFile = deleteFile;

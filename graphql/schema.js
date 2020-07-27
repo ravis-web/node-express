@@ -16,6 +16,7 @@ module.exports = buildSchema(`
   type RootQ {
     loginUser(email: String! password: String!) : authInfo!
     fetchPosts(page : Int) : postList!
+    fetchPost(id : ID!) : Post!
   }
 
   type Post {
@@ -52,6 +53,8 @@ module.exports = buildSchema(`
   type RootM {
     regUser(userInput : userData) : User!
     createPost(postInput : postData) : Post!
+    updatePost(id: ID! postInput: postData) : Post!
+    deletePost(id: ID!) : Boolean
   }
   
   schema {
