@@ -94,21 +94,38 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch('http://localhost:5000/feed/posts?page=' + page, {
-      headers: { Authorization: 'Bearer ' + this.props.token }
+
+    const graphQL = {
+      query: `
+        {
+          fetchPosts(page : ${page}) {posts{_id title content creator{name} createdAt updatedAt} total}
+        }
+      `
+    };
+
+    // fetch('http://localhost:5000/feed/posts?page=' + page)
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphQL)
     })
       .then(res => {
+        /*
         if (res.status !== 200) {
           throw new Error('Failed to fetch posts.');
         }
+        */
         return res.json();
       })
       .then(resData => {
         this.setState({
-          posts: resData.posts.map(post => {
+          posts: resData.data.fetchPosts.posts.map(post => {
             return { ...post, imagePath: post.image };
           }),
-          totalPosts: resData.totalItems,
+          totalPosts: resData.data.fetchPosts.total,
           postsLoading: false
         });
       })
@@ -161,20 +178,34 @@ class Feed extends Component {
       editLoading: true
     });
     // Set up data (with image!)
+    /*
     let url = 'http://localhost:5000/feed/post';
     let method = 'POST'
     if (this.state.editPost) {
       url = 'http://localhost:5000/feed/post/' + this.state.editPost._id;
       method = 'PUT'
     }
+    */
 
     const formData = new FormData();
     formData.append('title', postData.title);
     formData.append('image', postData.image);
     formData.append('content', postData.content);
 
-    fetch(url, {
-      method: method,
+    const graphQL = {
+      query: `
+        mutation {
+          createPost(postInput:{
+            title:"${postData.title}" content:"${postData.content}" image:"${postData.image}"
+          })
+          { _id title content creator{ name } createdAt }
+        }
+      `
+    };
+
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
+      /* method: method,
       // headers: {
       //   'Content-Type': 'application/json'
       // },
@@ -183,25 +214,41 @@ class Feed extends Component {
       //   content: postData.content
       // })
       body: formData, // multipart/form-data
-      headers: { Authorization: 'Bearer ' + this.props.token }
+      */
+      headers: {
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphQL)
     })
       .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Creating or editing a post failed!');
-        }
+        // if (res.status !== 200 && res.status !== 201) {
+        //   throw new Error('Creating or editing a post failed!');
+        // }
         return res.json();
       })
       .then(resData => {
         console.log(resData);
         const post = {
-          _id: resData.post._id,
-          title: resData.post.title,
-          content: resData.post.content,
-          creator: resData.post.creator,
-          createdAt: resData.post.createdAt
+          _id: resData.data.createPost._id,
+          title: resData.data.createPost.title,
+          content: resData.data.createPost.content,
+          creator: resData.data.createPost.creator,
+          createdAt: resData.data.createPost.createdAt
         };
         this.setState(prevState => {
+          let updatedPosts = [...prevState.posts];
+          if (prevState.editPost) {
+            const postIndex = prevState.posts.findIndex(
+              p => p._id === prevState.editPost._id
+            );
+            updatedPosts[postIndex] = post;
+          } else {
+            updatedPosts.pop();
+            updatedPosts.unshift(post);
+          }
           return {
+            posts: updatedPosts,
             isEditing: false,
             editPost: null,
             editLoading: false

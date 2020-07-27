@@ -8,8 +8,14 @@ module.exports = buildSchema(`
     userId : String!
   }
 
+  type postList {
+    posts : [Post!]!
+    total : Int!
+  }
+
   type RootQ {
     loginUser(email: String! password: String!) : authInfo!
+    fetchPosts(page : Int) : postList!
   }
 
   type Post {
@@ -31,14 +37,21 @@ module.exports = buildSchema(`
     posts : [Post]
   }
 
-  input inputData {
+  input userData {
     name : String!
     email : String!
     password : String!
   }
 
+  input postData {
+    title : String!
+    content : String!
+    image : String!
+  }
+
   type RootM {
-    regUser(userInput : inputData) : User!
+    regUser(userInput : userData) : User!
+    createPost(postInput : postData) : Post!
   }
   
   schema {

@@ -5,6 +5,7 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/User');
+const Post = require('../models/Post');
 
 module.exports = {
   loginUser: async function ({ email, password }, req) {
@@ -52,5 +53,36 @@ module.exports = {
     const user = new User({ password: hashed, name: userInput.name, email: userInput.email });
     const currUser = await user.save();
     return { ...currUser._doc, _id: currUser._id.toString() };
+  },
+
+  createPost: async function ({ postInput }, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+    const user = await User.findById(req.userId);
+    const post = new Post({
+      title: postInput.title,
+      content: postInput.content,
+      image: postInput.image,
+      creator: req.userId
+    });
+    const currPost = await post.save();
+    user.posts.push(currPost);
+    await user.save();
+    return { ...currPost._doc, _id: currPost._id.toString(), creator: user, createdAt: currPost.createdAt.toISOString(), updatedAt: currPost.updatedAt.toISOString() };
+  },
+
+  fetchPosts: async function ({ page }, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+    const curPage = page || 1;
+    const perPage = 2; // sync w frontend
+    const totalPost = await Post.find().countDocuments();
+    const posts = await Post.find().populate('creator').skip((curPage - 1) * perPage).limit(perPage).sort({ createdAt: -1 });
+    if (!posts) throw new Error('no posts found');
+    return {
+      posts: posts.map(p => {
+        return {
+          ...p._doc, _id: p._id.toString(), createdAt: p.createdAt.toISOString(), updatedAt: p.updatedAt.toISOString()
+        }
+      }), total: totalPost
+    };
   }
 };

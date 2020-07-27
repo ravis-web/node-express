@@ -15,6 +15,8 @@ const graphql = expGrQL.graphqlHTTP;
 const schema = require('./graphql/schema');
 const resolver = require('./graphql/resolver');
 
+const isAuthen = require('./middlewares/isAuthen');
+
 
 /* Multer : Configs */
 const fileStore = multer.diskStorage({
@@ -69,6 +71,8 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/feed', feedRoutes);
 */
+
+app.use(isAuthen);
 
 // GraphQL
 app.use('/graphql', graphql({
