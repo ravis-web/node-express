@@ -16,10 +16,10 @@ class SinglePost extends Component {
     const postId = this.props.match.params.postId;
     const graphQL = {
       query: `
-        {
-          fetchPost(id : "${postId}") { _id title content image creator{name} createdAt updatedAt }
+        query ViewPost($postId : ID!){
+          fetchPost(id : $postId) { _id title content image creator{name} createdAt updatedAt }
         }
-      `
+      `, variables: { postId: postId }
     };
 
     // fetch('http://localhost:5000/feed/post/' + postId)

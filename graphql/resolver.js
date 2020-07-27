@@ -124,5 +124,21 @@ module.exports = {
       console.log(err.message);
       return false;
     }
+  },
+
+  fetchStatus: async function (args, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+    const user = await User.findById(req.userId);
+    if (!user) errOccured('user not found', 404);
+    return user.status;
+  },
+
+  updateStatus: async function ({ status }, req) {
+    if (!req.isAuthen) throw new Error('unauthorized request');
+    let user = await User.findById(req.userId);
+    if (!user) errOccured('user not found', 404);
+    user.status = status;
+    user = await user.save();
+    return user.status;
   }
 };

@@ -63,11 +63,11 @@ class App extends Component {
     /* GraphQL : Query */
     const graphQL = {
       query: `
-        { 
-          loginUser(email:"${authData.email}" password:"${authData.password}") 
+        query LoginUser($email : String!, $password: String!) { 
+          loginUser(email: $email password: $password) 
           { token userId }
         }
-      `
+      `, variables: { email: authData.email, password: authData.password }
     };
 
     // fetch('http://localhost:5000/auth/login') // REST API
@@ -103,7 +103,7 @@ class App extends Component {
         if (resData.errors) {
           throw new Error("User login failed!");
         }
-        console.log(resData);
+        // console.log(resData);
         this.setState({
           isAuth: true,
           token: resData.data.loginUser.token,
@@ -136,16 +136,20 @@ class App extends Component {
     /* GraphQL : Query */
     const graphQL = {
       query: `
-        mutation {
+        mutation NewUser($name: String!, $email: String!, $password: String!) {
           regUser(userInput: {
-            name:"${authData.signupForm.name.value}" 
-            email:"${authData.signupForm.email.value}"
-            password:"${authData.signupForm.password.value}"}
-          ){
+            name: $name
+            email: $email
+            password: $password
+          }){
             _id email
           }
         }
-      `
+      `, variables: {
+        name: authData.signupForm.name.value,
+        email: authData.signupForm.email.value,
+        password: authData.signupForm.password.value
+      }
     };
 
     // fetch('http://localhost:5000/auth/register') // REST APIs 
