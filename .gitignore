@@ -5,6 +5,7 @@
 node_modules
 
 # Cluster
+test/cluster.js
 utils/cluster.js
 
 # NPM
