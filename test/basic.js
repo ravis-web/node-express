@@ -1,3 +1,4 @@
+/* --- Basic Tests ---
 const { assert } = require("chai");
 
 it('should add two numbers', function () {
@@ -11,3 +12,4 @@ it('should not add two numbers', function () {
   const b = 3;
   assert.notEqual(a + b, 6, 'addition');
 })
+*/
